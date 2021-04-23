@@ -1,0 +1,34 @@
+version: '3'
+services:
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_database:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: nifi_db
+    restart: always
+
+  clickhouse:
+    image: yandex/clickhouse-server
+    container_name: clickhouse
+    ports:
+      - 8123:8123
+      - 9000:9000
+    volumes:
+      - ./clickhouse/cl_db:/var/lib/clickhouse
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: nifi_db
+      PGDATA: /var/lib/postgresql/data/pgdata
+    restart: always
+
+
+volumes:
+    postgres_database:
+        external: true

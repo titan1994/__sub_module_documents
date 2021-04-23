@@ -1,0 +1,48 @@
+# Действие превое - в командной строке набрать pipenv lock -r > requirements.txt
+version: '3'
+
+# Подводные камни винды... Предварительно создать: docker volume create postgres_database
+volumes:
+  pgdata:
+    driver: local
+    name: pgdata
+    driver_opts:
+      type: 'bind'
+      device: /var/lib/postgresql/data/
+
+# Общая сеть между микросервисами
+
+networks:
+  webappnetwork:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.16.238.0/24
+          gateway: 172.16.238.1
+# Сервисы
+services:
+
+  # Постгрес (официальная сборка)
+  postgres:
+    image: postgres
+    container_name: postgres
+    ports:
+      - 5432:5432
+
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: nifi_db
+      PGDATA: /var/lib/postgresql/data/db-files/
+
+    volumes:
+      - type: bind
+        source: ./postgres_db
+        target: /var/lib/postgresql/data/
+      - ./postgres_run_cfg:/docker-entrypoint-initdb.d/
+
+
+    networks:
+      webappnetwork:
+        ipv4_address: 172.16.238.10
